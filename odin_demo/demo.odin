@@ -288,13 +288,13 @@ control_flow::proc(){
 			fmt.println("c is alphanumeric") 
 		}
 		
-		switch x:=69;x{
+		switch x:=66;x{
 		case 0..<10:fmt.println("units")
 		case 10..<13:fmt.println("pre-teens")
 		case 13..<20:fmt.println("teens")
 		case 20..<30:fmt.println("twenties")
 		case 30..<50:fmt.println("nice and mature")
-		case 69:fmt.println("age ain't nothing but a number...MM's fav.")
+		case 66:fmt.println("age ain't nothing but a number...MM's fav.")
 		case:fmt.println("eewwwwww!") 
 		}
 		
@@ -343,8 +343,8 @@ control_flow::proc(){
 		// a more common use for defer as its used in Go
 		if false{
 			f,err:=os.open("my-file.txt")
-			if err!=0{ // NOTE: there is no 'nil' in odin, so interested in knowing how this works
-				// handle your error
+			if err!=0{ // NOTE: there is a 'nil' in odin, so interested in knowing how this works and
+				// why they did it this way to handle your error
 			}
 			defer os.close(f) // idomatic to defer close right away as in Go
 			// rest of your code. NOTE: also good to note here that odin doesn't have methods. That's
@@ -532,7 +532,256 @@ struct_type::proc(){
 union_type::proc(){
 	fmt.println("\n# UNION TYPES:")
 	
+	// so for me, again, union types fall into the interface & generics category of Go. It looks
+	// like the gist of it is creating type sets or a union of types and then anything that falls
+	// into that set can be used or held by that variable (interchangeably)
+	{
+		fmt.println("Unions:")
+		val:union{int,bool} // so 'val' is now both an int and a bool
+		val=137
+		if i,ok:=val.(int);ok{ // this is a direct copy of Go syntax here. 'comma,ok', though the
+		// type assertion I believe is a little different, but may be the same as well
+			fmt.println(i) 
+		}
+		val=true // now its a bool
+		fmt.println(val) 
+		
+		val=66
+		
+		switch v in val{ // note the slight  diff from goes type switch. Here we say 'v in val' so
+		// its almost a merge on the syntax of a 'for..in' statement and a 'switch' statement.
+		case int:fmt.println("int",v)
+		case bool:fmt.println("bool",v)
+		case:fmt.println("nil") 			
+		}
+	}
+	{
+		// There is duality between 'any' and 'union'
+		// An 'any' has a pointer to the data and allows for any type (open)
+		// A 'union' has a binary blob to store the d ata and allows only certain
+		// types (closed). The following code is with 'any' but has the same syntax.
+		fmt.println("\nAny:")
+		val:any // so 'val' is now open to use any type. This is just like Go's any it seems
+		val=137
+		if i,ok:=val.(int);ok{ // this is a direct copy of Go syntax here. 'comma,ok', though the
+		// type assertion I believe is a little different, but may be the same as well
+			fmt.println(i) 
+		}
+		val=true // now its a bool
+		fmt.println(val) 
+		
+		val=66
+		
+		switch v in val{ // note the slight  diff from goes type switch. Here we say 'v in val' so
+		// its almost a merge on the syntax of a 'for..in' statement and a 'switch' statement.
+		case int:fmt.println("int",v)
+		case bool:fmt.println("bool",v)
+		case:fmt.println("nil") 			
+		}
+		
+	}
+	
+	Vector3::distinct [3]f32
+	Quaternion::distinct quaternion128
+	
+	// Some more realistic examples:
+	{
+		// NOTE: For the above basic examples, you may not have any particular use for it.
+		// However, my main use for them is not for these simple cases. My main use is for
+		// hierarchical types. Many prefer subtyping, embedding the base data into derived
+		// types. Below is an example of this for a basic game entity.
+		Entity::struct{
+			id:u64,
+			name:string,
+			position:Vector3,
+			orientation:Quaternion,
+			
+			derived:any,
+		}
+		
+		Frog::struct{
+			using entity:Entity,
+			jump_height:f32,
+		}
+		
+		Monster::struct{
+			using entity:Entity,
+			is_robot:bool,
+			is_zombie:bool,
+		}
+		
+		// We'll see the details of this in the 'parametric_polymorphism' proc below
+		new_entity::proc($T:typeid)->^Entity{ // so I know $ is generic typing so I guess 'typeid'
+		// just means means its whatever type of T. 
+			t:=new(T)
+			t.derived = t^
+			return t
+		}
+		entity:=new_entity(Monster)
+		
+		switch e in entity.derived{
+		case Frog:fmt.println("Ribbit")
+		case Monster:
+			if e.is_robot{fmt.println("Robotic")}
+			if e.is_zombie{fmt.println("Grrr!")}
+			fmt.println("I'm a monster") 
+		}
+	}
+	
+	{
+		// NOTE: A union can be used to achieve something similar. Instead
+		// of embedding the base data into the derived types, the derived data 
+		// is embedded into the base type. Below is th esame example of the 
+		// basic game Entity but using an union.
+		
+		Entity::struct{
+			id:u64,
+			name:string,
+			position:Vector3,
+			orientation:Quaternion,
+			
+			derived:union{Frog,Monster},
+		}
+		
+		Frog::struct{
+			using entity:^Entity,
+			jump_height:f32,
+		}
+		
+		Monster::struct{
+			using entity: ^Entity,
+			is_robot:bool,
+			is_zombie:bool,
+		}
+		
+		new_entity::proc($T:typeid)->^Entity{
+			t:=new(Entity)
+			t.derived=T{entity=t}
+			return t
+		}
+		
+		entity:=new_entity(Monster)
+		
+		switch e in entity.derived{
+		case Frog:fmt.println("Ribbit")
+		case Monster:
+			if e.is_robot{fmt.println("Robotic")}
+			if e.is_zombie{fmt.println("Grrrr!")}
+		}
+		
+		// NOTE: As you can see, the usage code has not changed, only itst memory
+		// layout. Both approaches have their own advantages but they can be used
+		// toghether to achieve different results. The subtyping approach can allow
+		// for a greater control of the memory layout and memory allocation, e.g. storing
+		// the derivatives together. However, this is also it disadvantage. You must
+		// either preallocate arrays for each derivative separation (which can be easily missed)
+		// or preallocate a bunch of raw memory; determining the mas size of the derived
+		// types would require the aid of metaprogramming. Unions solve this particular
+		// problem as the data is stored with the base data. Therefore, it is possible
+		// to preallocate, e.g. [100]Entity
+		
+		// It should be noted that the union approach can have the same memory layout
+		// as the 'any' and with the same type restrictions by using a pointer type for
+		// the deriviatives.
+		
+			
+	}
 }
+
+using_statement::proc(){
+	fmt.println("\n# USING STATEMENT:")
+	
+	// using can be used to bring entities declared in a scope/namespace
+	// into the current scope. This can be applied to import names, struct fields
+	// procedure fields, and struct values. 
+	Vector3::struct{x,y,z:f32}
+	{
+		entity:=&Entity{
+			position=Vector3{1,4,9},
+		}
+		
+		Entity::struct{
+			position:Vector3,
+			orientation:quaternion128,
+		}
+		
+		// it can be used like this or...
+		foo0::proc(entity:^Entity){
+			fmt.println(entity.position.x,entity.position.y,entity.position.z)
+		}
+		
+		// The entity members can be brought into the proc scope by using it like this:
+		foo1::proc(entity:^Entity){
+			using entity
+			fmt.println(position.x,position.y,position.z) 
+		}
+		
+		// using can be applied to the parameter directly as well:
+		foo2::proc(using entity: ^Entity){
+			fmt.println(position.x,position.y,position.z) 
+		}
+		
+		// It can also be applied to the subfields:
+		foo3::proc(entity:^Entity){
+			using entity.position
+			fmt.println(x,y,z)
+		}
+		
+		foo0(entity)
+		foo1(entity)
+		foo2(entity)
+		foo3(entity)
+	}
+	{
+		// We can also apply the using statement to the struct fields directly,
+		// this is very powerful for customizing usage in different scopes. This makes
+		// all the fields of position appear as if they are on Entity itself
+		Entity::struct{
+			using position:Vector3,
+			orientation:quaternion128,
+		}
+		
+		foo::proc(entity:^Entity){
+			fmt.println(entity.x,entity.y,entity.z) 
+		}
+		
+		foo(&Entity{}) // did it this way rather than going through the process above of creating
+		// a new entity etc.
+		
+		
+		// Subtype polymorphism
+		// It is possible to get subtype polymorphism, similar to inheritance-lie funcationality
+		// in C++, but without the requirement of vtables or unknown struct layouts.
+		
+		Colour::struct{r,g,b,a:u8}
+		Frog::struct{
+			ribbit_volume:f32,
+			using entity: Entity,
+			colour: Colour,
+		}
+		// This seems like fancy words for Go's struct embedding
+		frog:Frog
+		foo(&frog.entity)
+		foo(&frog)
+		frog.x=123
+		foo(&frog)
+		
+		// NOTE: using can be applied to arbirarily many things, which allows the ability
+		// to ahve multiple subtype polymorphism (but also has its issues)
+		
+		// NOTE: using'd fields can still be referred to by name.
+	}
+}
+
+implicit_context_system::proc(){
+	fmt.println("\n# IMPLICIT CONTEXT SYSTEM:")
+	
+	
+	
+}
+
+
+
 
 
 main::proc(){
@@ -550,5 +799,7 @@ main::proc(){
 	explicit_procedure_overloading() 
 	struct_type()
 	union_type()
+	using_statement()
+	implicit_context_system()
 }
 
