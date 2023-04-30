@@ -776,8 +776,56 @@ using_statement::proc(){
 implicit_context_system::proc(){
 	fmt.println("\n# IMPLICIT CONTEXT SYSTEM:")
 	
+	// In each scope, there is an implicit value named context. This
+	// context variable is local to each scope and is implicitly passed
+	// by pointer to any proc call in that scope (if the proc has the odin
+	// calling convention) 
 	
+	// The main purpose of the implicit context system is for the ability
+	// to intercept third-party code and libraries and modify their
+	// functionality. One such case is modifying how a library allocates
+	// something or logs somethng. In C, this was usually achieved with
+	// the library defining macros which could be overridden so that the
+	// user could define what he wanted. However, not many libraries
+	// supported this in many languages by default which meant intercepting
+	// third-party code to see what it does and to change how it does it is
+	// not possible.
 	
+	c:=context // copy the current scope's context
+	
+	context.user_index = 456
+	{
+		context.allocator = my_custom_allocator()
+		context.user_index = 123
+		what_a_fool_believes() // the 'context' for this scope is implicitly passed to 'what_a_fool_believes'
+	}
+	
+	// 'context' value is local to the scope it is in
+	fmt.println(context.user_index == 456)
+	
+	what_a_fool_believes::proc(){
+		c:=context // this 'context' is teh same as the parent proc that it was called from
+		// From this example, context.user_index == 123
+		// A context.allocator is assigned to the return value of 'my_custom_allocator()'
+		fmt.println(context.user_index==123)
+		fmt.println(c)
+		
+		// The memory management proc use the 'context.allocator' by default
+		// unless explicitly specified otherwise
+		china_grove:=new(int)
+		free(china_grove) 
+		
+		_ = c
+	}
+	
+	my_custom_allocator::mem.nil_allocator
+	_=c
+	
+	// By default the context value has default values for its parameters which is
+	// decided in the package runtime. What the defaults are, are compiler specific.
+	
+	// To see what the implicit context value contains, please see the following
+	// definition in package runtime.
 }
 
 
@@ -801,5 +849,6 @@ main::proc(){
 	union_type()
 	using_statement()
 	implicit_context_system()
+	
 }
 
