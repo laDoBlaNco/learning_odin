@@ -226,6 +226,19 @@ for_loop :: proc() {
 
 }
 
+if_statement :: proc() {
+	// The if statement in Odin is just like the one from Go. No need for ()s but
+	// {}s are necessary, or 'do' for one liners.
+	if true do fmt.println("Go can't do this")
+
+	x := 66
+	if x >= 0 do fmt.println("x is positive")
+
+	// like 'for', the 'if' statement can start with an initial statement to 
+	// execute the condition, just like Go. Variables declared by the inital 
+	// statement are only in the scope of that if statement.
+}
+
 //===================== Main Process to Run
 
 main :: proc() {
@@ -236,4 +249,5 @@ main :: proc() {
 	variables()
 	assignment()
 	for_loop()
+	if_statement()
 }
