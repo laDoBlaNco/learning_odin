@@ -237,7 +237,181 @@ if_statement :: proc() {
 	// like 'for', the 'if' statement can start with an initial statement to 
 	// execute the condition, just like Go. Variables declared by the inital 
 	// statement are only in the scope of that if statement.
+  if x:=-15;x<0 do fmt.println("X is negative")
+
+  // vars declared inside an if statement are also available to any of the 'else' blocks
+  // just like in Go
+  if x:=66;x<0{
+    fmt.println("x is negative")
+  }else if x==0{
+    fmt.println("x is zero")
+  }else{
+    fmt.println("x is positive")
+  }
+
+  fmt.println()
+};
+
+switch_statment::proc(){
+  // A switch statement is another way to write a seq of if-else statements. in Odin, the default
+  // case is denoted as a case without any expression
+  switch arch:=ODIN_ARCH;arch{
+    // this is very similar if not exactly like Go
+    case .i386,.wasm32,.arm32:fmt.println("32 bit")
+    case .amd64,.wasm64p32,.arm64:fmt.println("64 bit")
+    case .Unknown:fmt.println("Unknown architecture") 
+  }
+
+  // Odin's switch is like the one in C or C++, except that Odin, like Go, only runs the selected
+  // case. This means that a break statement is not needed at the end of each case. Another
+  // important difference is that the case values need not be integers nor constants. 
+
+  // To achieve the C-like fall-through into the next case block, the keyword fallthrough can
+  // be used.
+
+  // switch cases are evaluated from top to bottom, stopping when the case succeeds. 
+  i:=0
+  switch i{
+    case 0:
+    case :fmt.println("We never  get to this")
+  }
+  
+  // A switch statement without a condition is the same as 'switch true', meaning we can 
+  // write a clean and long if..else chain and have the ability to break if needed
+  x:=66
+  switch{
+    case x<0:fmt.println("x is negative")
+    case x==0:fmt.println("x is zero")
+    case:fmt.println("x is positive")
+  }
+
+  // A switch statement can also use ranges like a range-based loop:
+  // I'm not sure if Go can also do this, but I don't think so. Point for G Bill
+  c:=7
+  x=17
+
+  switch c{
+    case 'A'..='Z','a'..='z','0'..='9':fmt.println("c is alphanumeric")
+  }
+
+  switch x{
+    case 0..<10:fmt.println("units")
+    case 10..<13:fmt.println("pre-teens")
+    case 13..<20:fmt.println("teens")
+    case 20..<30:fmt.println("twenties")
+  }
+
+  fmt.println()
+
 }
+
+partial_switch::proc(){
+  // @partial switch with enum values:
+  Foo::enum{
+    A,
+    B,
+    C,
+    D,
+  }
+
+  f:=Foo.A
+  switch f{
+    case .A:fmt.println("A")
+    case .B:fmt.println("B")
+    case .C:fmt.println("C")
+    case .D:fmt.println("D")
+    case:fmt.println("?") 
+  }
+
+  // ok so with the *partial switch we don't get an error for not covering all the possible
+  // cases as we would in the one above, if we left out one of the .Cs
+  #partial switch f{
+    case .A:fmt.println("A")
+    case .B:fmt.println("B") 
+  }
+
+  // With union types (see Type switch statement (which is another Go reference) which we'll
+  // see later in this overvierw)
+  Bar::union{int,bool}
+  g:Bar = 123  // note again this is the long typing version of g:=123 which is the inferred version
+  switch _ in g{
+    case int:fmt.println("int")
+    case bool:fmt.println("bool") 
+    case:
+  }
+
+  // again with the #partial switch we don't have to use all the cases
+  #partial switch _ in g{
+    case bool:fmt.println("bool") 
+  }
+  fmt.println()
+}
+
+
+defer_statement::proc(){
+  // A defer statement defers the execution of a statement until the end of the scope it is
+  // in. 
+  // NOTE: I learned yesterday (9/13/24) in the morning that this is different from Go in that 
+  //       Go defers execution to the end of a function only, but here in Odin its scope.
+  //       A subtle but important difference and yet another point for G Bill.
+  x:=123
+  defer fmt.println(x)
+
+  {
+    defer x = 4  // here the assignment is deferred to the end of this inner-scope after x=2
+    x = 2
+  }
+  fmt.println(x)  // so here it prints 4 because it was set to 4 at the end of the inner-scope
+
+  x = 234 // after this is set to 234 the very first deferred print is happening.
+
+  // You can defer an entire block as well if you need too:
+  // Meaning we can defer functions in blocks or if statement blocks as well to the end of the
+  // parent scope.
+
+  // Just like with Go, Defer statements are executed in reverse order due to the stack they
+  // are sent to.
+  defer fmt.println("1")
+  defer fmt.println("2")
+  defer fmt.println("3") 
+
+  // Note that due to the way I'm running these procedures, even my printing of 234 from the 
+  // beginning of the procedure is done last, since it was first on the stack of this scope.
+
+  // A real use case would be opening a file and deferring its closing in the next line of code
+  // although it won't happen till the end of that scope. In this case it acts akin to an explicit
+  // c++ destructor however, the error handling is basic control flow.
+
+  // NOTE: The defer construct in Odin differs from Go's defer, which is function-exit and relies
+  // on a closure stack system. 
+}
+
+when_statement::proc(){
+  fmt.println()
+
+  // The 'when' statement is almost identical to the 'if' statement but with some differences:
+    // Each condition MUST be a constant expression as a when statement is evaluated at compilation
+    // The statements within a branch do not create a new scope
+    // The compiler checks the semantics and code ONLY for statements that belong to the first 
+    //    condition if its true
+    // An initial statement is not allowed in a when statement
+    // 'when' statements are allowed at file scope
+    when ODIN_ARCH==.i386{
+      fmt.println("32 bit")
+    }else when ODIN_ARCH==.amd64{
+      fmt.println("64 bit")
+    }else{
+      fmt.println("Unsupported architecture") 
+    }
+
+    // The 'when' statement is very useful for writing platform specific code. This is akin
+    // to the #if construct in C's preprocessor. However, in Odin, it is type checked. 
+}
+
+
+
+
+
 
 //===================== Main Process to Run
 
@@ -250,4 +424,10 @@ main :: proc() {
 	assignment()
 	for_loop()
 	if_statement()
+  switch_statment()
+  partial_switch()
+  defer_statement()
+  when_statement()
+
+
 }
