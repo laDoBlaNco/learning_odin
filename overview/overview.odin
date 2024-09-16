@@ -40,10 +40,13 @@ another_variable: int // cannot be accessed outside this file.
 hellope :: proc() {
 	// Hellope - To begin this tour, lets start with a modified version of the famous
 	// "hello world" program
+  fmt.println("Hello World!")
 	fmt.println("Hellope!")
 }
 
 comments :: proc() {
+  fmt.println()
+  fmt.println("Comments:")
 	// comments can be anywhere outside of a string or character literal. Single
 	// line comments begin with //, so pretty normal
 	fmt.println("No comments ran") // single line comment
@@ -61,6 +64,8 @@ comments :: proc() {
 }
 
 string_literals :: proc() {
+  fmt.println()
+  fmt.println("String Literals:")
 	// String literals are enclosed by DOUBLE quotes (like Go) and character literals (runes)
 	// in single quotes. Special chars are escaped with \ as normal.
 	fmt.println("This is a string in double quotes")
@@ -81,6 +86,8 @@ string_literals :: proc() {
 }
 
 numbers :: proc() {
+  fmt.println()
+  fmt.println("Numbers:")
 	// Numerical literals are similar to most other langs. One thing Odin uses is the _ 
 	// for better readability 1_000_000_000_000. if there's a . then its a floating point
 	// literal 1.0e9 and if it has a suffix of 'i' then its imaginary 2i (2 multiply square root
@@ -97,6 +104,8 @@ numbers :: proc() {
 }
 
 variables :: proc() {
+  fmt.println()
+  fmt.println("Variables:")
 	// A variable declaration declares a new variable for the current scope
 	x: int // declares 'x' to have type int
 	y, z: int // declares 'y' and 'z' to have type 'int'
@@ -109,6 +118,8 @@ variables :: proc() {
 }
 
 assignment :: proc() {
+  fmt.println()
+  fmt.println("Assignments:")
 	// The assignment statement assigns a new value to a variable/location
 	x: int = 123 // declares a new variable 'x' with type 'int' and assigns '123' to it
 	x = 637 // assigns a new value to 'x'
@@ -124,6 +135,8 @@ assignment :: proc() {
 
 // Control flow statements
 for_loop :: proc() {
+  fmt.println()
+  fmt.println("For Loops:")
 	// like Go, Odin only has one loop construct, for. But it has more uses for it
 	// The basic for loop same as Go
 	for i := 0; i < 10; i += 1 { 	// there is no i++ in Odin
@@ -222,11 +235,12 @@ for_loop :: proc() {
 	// definitely not in Go
 	array := [?]int{10, 20, 30, 40, 50}
 	#reverse for x in array do fmt.println(x)
-	fmt.println()
 
 }
 
 if_statement :: proc() {
+  fmt.println()
+  fmt.println("If Statements:")
 	// The if statement in Odin is just like the one from Go. No need for ()s but
 	// {}s are necessary, or 'do' for one liners.
 	if true do fmt.println("Go can't do this")
@@ -248,11 +262,11 @@ if_statement :: proc() {
   }else{
     fmt.println("x is positive")
   }
-
-  fmt.println()
 };
 
 switch_statment::proc(){
+  fmt.println()
+  fmt.println("Switch Statements:")
   // A switch statement is another way to write a seq of if-else statements. in Odin, the default
   // case is denoted as a case without any expression
   switch arch:=ODIN_ARCH;arch{
@@ -301,11 +315,11 @@ switch_statment::proc(){
     case 20..<30:fmt.println("twenties")
   }
 
-  fmt.println()
-
 }
 
 partial_switch::proc(){
+  fmt.println()
+  fmt.println("Partial Switches:")
   // @partial switch with enum values:
   Foo::enum{
     A,
@@ -344,11 +358,12 @@ partial_switch::proc(){
   #partial switch _ in g{
     case bool:fmt.println("bool") 
   }
-  fmt.println()
 }
 
 
 defer_statement::proc(){
+  fmt.println()
+  fmt.println("Defer Statement:")
   // A defer statement defers the execution of a statement until the end of the scope it is
   // in. 
   // NOTE: I learned yesterday (9/13/24) in the morning that this is different from Go in that 
@@ -388,6 +403,7 @@ defer_statement::proc(){
 
 when_statement::proc(){
   fmt.println()
+  fmt.println("When Statements:")
 
   // The 'when' statement is almost identical to the 'if' statement but with some differences:
     // Each condition MUST be a constant expression as a when statement is evaluated at compilation
@@ -408,7 +424,254 @@ when_statement::proc(){
     // to the #if construct in C's preprocessor. However, in Odin, it is type checked. 
 }
 
+branch_statements::proc(){
+  fmt.println()
+  fmt.println("Branch Statements:")
 
+  // Break statement
+  // a for loop or switch statement can be left prematurely with a break statement. It leaves
+  // the innermost construct, unless a label of a construct is given. Pretty normal behavior here.
+
+  /*
+  Too much to make this example work so I'll just put the pseudo code to show how it works
+
+  for cond {
+    switch{
+      case:
+        if cond{
+          break // this will break out of the 'switch' construct
+        }
+        break // this will break out of the 'for' loop.
+    }
+    loop: for cond1 {
+            for cond2 {
+              break loop  // leaves both loops because of going straight to the label
+            }
+    }
+    exit: {
+        if true{
+          break exit // works with labled blocks too
+        }
+        fmt.println("This line will never print.")
+    }
+  }
+
+
+  Continue statement
+  As in many programming languages, a 'continue' statement starts the next iteration of
+  a loop prematurely:
+
+  for cond{
+        if get_foo(){
+          continue
+        }
+        fmt.println("Hellope")
+  }
+
+
+  fallthrough statement
+  Odin's switch is like the one in C or C++, except that Odin only runs the selected case.
+  This means that a break statement is not needed at the end of each case. Another important
+  difference is that the case values need not be integers nor constants. 
+
+  fallthrough can be used to explicitly fall through into the next case block.
+  switch i{
+    case 0:
+      foo()
+      fallthrough
+    case 1:
+      bar()
+  }
+  */
+  fmt.println("Nothing to print")
+}
+
+procedures::proc(){
+  fmt.println()
+  fmt.println("Procedures:")
+
+  // In odin, a procedure is something that can do work, which some languages call functions
+  // or methods. A procedure literal in odin is defined with the 'proc' keyword:
+  fibonnacci::proc(n:int)->int{
+    switch{
+      case n<1:return 0
+      case n==1:return 1
+    }
+    return fibonnacci(n-1) + fibonnacci(n-2)
+  }
+
+  fmt.println(fibonnacci(3)) 
+}
+
+parameters::proc(){
+  fmt.println()
+  fmt.println("Parameters:")
+
+  // Procedures can take zero or more params. the following example is a basic proc
+  // that multiples two ints together.
+  multipy::proc(x:int,y:int)->int{ // Note the sig is similar to Go but the return is '->int'
+    return x*y
+  }
+  fmt.println(multipy(137,432))
+
+  // when we have 2 or more consecutive params that share a type, we can omit the type
+  // from the previous name (just like in Go), like other variable declarations. So
+  // the above could also be 
+  multiply::proc(x,y:int)->int{
+    return x*y
+  }
+  fmt.println(multiply(137,432))
+
+  // Continuing the C family traditions, everything in Odin is passed by value (like Go, 
+  // so basically copies; rather than by reference, e.g. Fortran,Java,etc). However, Odin 
+  // differs from the C/C++ tradition in that all procedure parameters in Odin are immutable
+  // values. This allows for numerous optimizations with Odin calling conventions ('odin' and
+  // 'contextless') which would not be possible with the original C tradition of always 
+  // passing a copy of the thing that has been passed. 
+
+  // Passing a pointer value makes a copy of the pointer, not the data it points to. Slices,
+  // dynamic arrays, and maps behave like pointers in this case (just like Go, sounds like; 
+  // internally they are structures that contain values, which include pointers, and the 
+  // 'structure' is passed by value)
+
+  // To mutate the procedure params like in C, an explicit copy is required. This can be
+  // done through shadowing the variable declaration. Exactly what do in Go for certain
+  // loop constructs prior to 1.23
+  fmt.println()
+  foo::proc(x:int){
+    x:=x   // explicit mutation. Without this it won't compile
+    for x>0{
+      fmt.println(x)
+      x-=1
+    }
+  }
+  foo(3)
+
+  // Procedures can be variadic as well which is pretty common 
+  fmt.println()
+  sum::proc(nums:..int)->(result:int){
+    for n in nums{
+      result+=n
+    }
+    return  // Another from Go, here we have the 'naked' return, since the return value is named
+            // in the signature '->(result:int)'
+            // Also note the spread syntax type is ..int, instead of ...int as we see in others
+  }
+  fmt.println(sum())
+  fmt.println(sum(1,2))
+  fmt.println(sum(1,2,3,4,5))
+
+  odds:=[]int{1,3,5}
+  fmt.println(sum(..odds)) // again a look at the spread operator, a slice as varargs
+}
+
+multiple_results::proc(){
+  fmt.println()
+  fmt.println("Multiple Results:") 
+
+  // A procedure in Odin can return any number of results
+  swap::proc(x,y:int)->(int,int){
+    return y,x
+  }
+  fmt.println(1,2)
+  fmt.println(swap(1,2))
+
+  // Named Results
+  // This is what I referred to in a previous section as coming from Go. 
+  // Return values in Odin may be named. If so, they are treated as variables defined at the top
+  // of the proc, like input params. A return statement without args will return the named return
+  // values. 'Naked' return statements should only be used in short and very simple procs, as it
+  // reducees readability.
+  fmt.println()
+  do_math::proc(input:int)->(x,y:int){
+    x=2*input+1
+    y=3*input/5
+    return x,y
+  }
+  fmt.println(do_math(66))
+
+  do_math_with_naked_return::proc(input:int)->(x,y:int){
+    x=2*input+1
+    y=3*input/5
+    return  // Naked return
+  }
+  fmt.println(do_math_with_naked_return(66))
+}
+
+named_arguments::proc(){
+  fmt.println()
+  fmt.println("Named Arguments:")
+
+  // When caling a procedure, it is not always clear in which order params might appear.
+  // Therefore, the arguments can be named, like a struct literal, to make it clear which
+  // arg a parameter is for
+
+  // For example:
+  // create_window::proc(title:string,x,y:int,width,height:int,monitor:^Monitor)->(^Window,Window_Error){
+  //   ... 
+  // }
+
+  // window, err := create_windoow(title="Hellop Title",monitor=nil,width=854,height=480,x=0,y=0)
+
+  // As of dev-2023-07 release, mixing named and position args is allowed. This is often useful
+  // when a proc has a lot of arguments or you want to customize default values. 
+  // NOTE: Positional args are NOT ALLOWED AFTER named arguments.
+
+  // foo::proc(value:int,name:string,x:bool,y:f32,z:=0){...} // note the last one is a default
+  // foo(134,"hellope",x=true,y=4.5)
+
+  // Let's talk about default values now:
+  // Its really the same we just give the vars values to infer type, rather than the type name
+  // create_window::proc(title:string, x:=0,y:=0,width:=854,height:=480,monitor:^Monitor=nil)->(^Window,Window_Error){...}
+  // Note above the last arg has both Type and default, so we use var:T=value instead of var:=val
+  // Note also that these default values must be compile time known values, such as a constant 
+  // value or nil (if the type supports it)
+
+
+  // Finally for this section, Explicit procedure overloading:
+  // Unlike other languages, Odin provides the ability to explicitly overload procedures. 
+  bool_to_string::proc(b:bool)->string{
+    if b {return "true"}
+    return "false"
+  }
+  int_to_string::proc(i:int)->string{
+    return "I'm a string now"
+  }
+
+  to_string::proc{bool_to_string,int_to_string} 
+  fmt.println(to_string(66))
+  fmt.println(to_string(false))
+  fmt.println(to_string(true))
+  // That is very cool, and super intuitive. another point for G Bill
+
+  /*
+  Rationale for explicit overloading:
+  The design goals of odin were explicitness and simplicity. Implicit procedure overloading 
+  complicates the scoping system. In C++, you can't nest procedures within procedures, so all
+  procedure look-ups are done at the global scope. In Odin, procedures can be nested within
+  procedures and, as a result, determining which procedure should be used, in the case of 
+  implicit overloading, is very complex. 
+
+  What are the advantages:
+    -- Explicitness of what is overloaded
+    -- Able to refer to the specific procedure if needed
+    -- Clear which scope the entiry name belongs to
+    -- Ability to specialize parametric polymorphic procedures if necessary, wich have the same
+       parameter, but different bounds (see where clauses)
+
+    foo::proc{
+      foo_bar,
+      foo_baz,
+      foo_baz2,
+      something_entirely_different,
+    }
+      ...and it'll all work
+
+
+
+  */
+
+}
 
 
 
@@ -428,6 +691,10 @@ main :: proc() {
   partial_switch()
   defer_statement()
   when_statement()
-
+  branch_statements()
+  procedures()
+  parameters()
+  multiple_results()
+  named_arguments()
 
 }
